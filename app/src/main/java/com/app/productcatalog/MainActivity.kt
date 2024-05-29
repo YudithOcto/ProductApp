@@ -4,10 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,16 +50,24 @@ fun ProductApp(
     navController: NavHostController = rememberNavController(),
     viewModel: ProductListViewModel
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = ScreenRoute.ProductListScreen.name
-    ) {
-        composable(ScreenRoute.ProductListScreen.name) {
-            val state: UiState by viewModel.uiState.collectAsStateWithLifecycle()
-            ProductListScreen(
-                uiState = state
-            ) {
-                viewModel.onEventChange(it)
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState)}
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = ScreenRoute.ProductListScreen.name,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(ScreenRoute.ProductListScreen.name) {
+                val state: UiState by viewModel.uiState.collectAsStateWithLifecycle()
+                ProductListScreen(
+                    uiState = state,
+                    snackBarState = snackbarHostState,
+                ) {
+                    viewModel.onEventChange(it)
+                }
             }
         }
     }

@@ -22,6 +22,7 @@ import com.app.productcatalog.ui.FilterOption
 import com.app.productcatalog.ui.ProductListViewModel
 import com.app.productcatalog.ui.UiEvent
 import com.app.productcatalog.ui.UiState
+import com.app.productcatalog.util.Event
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
@@ -144,5 +145,29 @@ class ProductListScreenTest {
         productViewModel.onEventChange(UiEvent.OnFavouritesProductSelected(MockData.productSpecList[0]))
         productViewModel.updateViewModel(UiState(isLoading = false, successGetProducts = emptyList()))
 
+    }
+
+    @Test
+    fun productListScreenSearchDatabaseErrorShowSnackbar() {
+        // search hint should displayed
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Cari Barang").assertIsDisplayed()
+
+        // User Typing
+        val searchInput = composeRule.onNodeWithTag("SearchBar")
+        searchInput.performClick()
+        composeRule.onNode(isFocused()).performTextInput("Smartphone")
+        composeRule.onNode(isFocused()).assertTextEquals("Smartphone")
+
+        // Returns DB error with message
+        productViewModel.updateViewModel(
+            UiState(
+                isLoading = false,
+               error = Event(Exception("Telah Terjadi Kesalahan"))
+            )
+        )
+
+        // Assert if toast is showing with text messsage
+        composeRule.onNodeWithText("Telah Terjadi Kesalahan").assertIsDisplayed()
     }
 }
